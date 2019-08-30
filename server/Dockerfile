@@ -32,14 +32,12 @@ RUN apt install -y ffmpeg
 # 웹 서버 설치
 #
 
-# Apache2 & PHP7 & MySql 설치
-RUN apt install -y \
-  php \
-  php-mysql \
-  php-common \
-  mariadb-server
+# MySql 설치
+RUN apt install -y mariadb-server
+RUN service mysql start
 
-RUN service apache2 start \
-  && service mysql start
+
+# django 설치
+RUN pip install django djangorestframework django-rest-swagger
 
 EXPOSE 80 443
