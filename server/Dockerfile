@@ -34,10 +34,11 @@ RUN apt install -y ffmpeg
 
 # MySql 설치
 RUN apt install -y mariadb-server
-RUN service mysql start
 
 
 # django 설치
 RUN pip install django djangorestframework django-rest-swagger
 
 EXPOSE 80 443
+
+ENTRYPOINT service mysql start && bash
