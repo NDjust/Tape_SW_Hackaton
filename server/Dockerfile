@@ -35,10 +35,12 @@ RUN apt install -y ffmpeg
 # MySql 설치
 RUN apt install -y mariadb-server
 
-
 # django 설치
-RUN pip install django djangorestframework django-rest-swagger
+RUN pip install django djangorestframework django-rest-swagger mysqlclient
+
+# 기본 DB 생성
+RUN service mysql start && echo create database server\; | mysql -u root
 
 EXPOSE 80 443
 
-ENTRYPOINT service mysql start && bash
+ENTRYPOINT service mysql start && python /server/manage.py migrate && bash
