@@ -43,6 +43,8 @@ RUN service mysql start && echo create database server\; | mysql -u root
 
 EXPOSE 80 443 8000
 
-ENTRYPOINT service mysql start && python /server/manage.py migrate && bash
+# nginx 설치
+RUN apt install -y nginx
 
-CMD ["python", "/server/manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT service mysql start && python /server/manage.py migrate && service nginx start && bash
+

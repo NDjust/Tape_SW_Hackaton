@@ -5,6 +5,7 @@ sudo docker run -it --rm \
   -v `pwd`/tape:/tape \
   -e GOOGLE_APPLICATION_CREDENTIALS=/credential.json \
   -v `pwd`/server/src/server:/server \
-  -p 80:8000 \
+  -v `pwd`/server/host.conf:/etc/nginx/sites-enabled/default \
+  -p 80:80 \
   server bash
 
