@@ -23,9 +23,10 @@ def save_user_profile(sender, instance, **kwargs):
 
 
 class Video(models.Model):
-    user = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=150)
     description = models.TextField()
-    pub_date = models.DateTimeField()
+    pub_date = models.DateTimeField(auto_now_add=True)
     thumbnail = models.FileField()
     filepath = models.FileField()
+    filterpath = models.FileField(blank=True)
