@@ -44,6 +44,15 @@ class VideoViewSet(viewsets.ModelViewSet):
     parser_classes = (MultiPartParser, FormParser,)
     read_only_fields = ('user',)
 
+    def get_queryset(self):
+        queryset = Video.objects.order_by('-id')
+
+        q = self.request.query_params.get('q', None)
+        if q is not None:
+            queryset = queryset.filter(title__contains=q) | queryset.filter(description__contains=q)
+
+        return queryset
+
     def perform_create(self, serializer):
         """
         1. upload된 영상 파일을 os tape input file로 전달.
