@@ -23,5 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('main/doc', get_swagger_view(title='Tape Viedo API')),
     path('main/video', include(router.urls)),
+    path('login', views.login),
+    path('signup', views.signup),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

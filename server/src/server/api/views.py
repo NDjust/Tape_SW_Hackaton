@@ -1,8 +1,11 @@
 from django.shortcuts import render
+from django.http.response import JsonResponse, HttpResponseBadRequest
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework import serializers, viewsets
 from .models import *
 from django.contrib.auth.models import User
+from django.contrib import auth
+from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 
 
@@ -47,3 +50,34 @@ class VideoViewSet(viewsets.ModelViewSet):
             filepath=self.request.data.get('filepath'),
             thumbnail=self.request.data.get('thumbnail'),
             description=self.request.data.get('description'))
+
+@csrf_exempt
+def login(request):
+    try:
+        user = auth.authenticate(request, username=request.POST['phone'], password=request.POST['password'])
+        if user is not None:
+            auth.login(request, user)
+            return JsonResponse({
+                'id': user.id,
+            })
+        raise ValueError('user not found or incorrect password!')
+    except Exception as ex:
+        return JsonResponse({
+            'error': str(ex),
+        })
+
+@csrf_exempt
+def signup(request):
+    try:
+        user = User.objects.create_user(username=request.POST['phone'], password=request.POST['password'])
+        user.profile.name = request.POST['name']
+        user.profile.passwordQuestion = request.POST['password_question']
+        user.profile.passwordQuestionAnswer = request.POST['password_question_answer']
+        auth.login(request, user)
+        return JsonResponse({
+            'id': user.id,
+        })
+    except Exception as ex:
+        return JsonResponse({
+            'error': str(ex),
+        })
