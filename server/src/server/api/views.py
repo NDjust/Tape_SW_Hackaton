@@ -67,8 +67,9 @@ class VideoViewSet(viewsets.ModelViewSet):
         tape_input_video = os.path.join(tape_input, 'test2.mp4')
 
         # copy raw video into tape input directory
-        with open(tape_input_video, 'wb', 4096) as f:
-            f.write(upload_file.read())
+        with open(tape_input_video, 'wb') as f:
+            for chunk in upload_file.chunks():
+                f.write(chunk)
 
         # 상대 경로이기 때문에 cd로 해당 루트로 들어가서 실행.
         # system 첫 호출시 위치는 root.
@@ -89,14 +90,11 @@ class VideoViewSet(viewsets.ModelViewSet):
         serializer.save(
             user=User.objects.get(pk=self.request.data.get('user')),
             title=self.request.data.get('title'),
-            filepath=self.request.data.get('filepath'),
+            filepath=upload_file,
             description=self.request.data.get('description'),
             filterpath=result_file,
             thumbnail=thumnail,
             )
-
-        # user = auth.authenticate(
-        #     request, username=request.POST['phone'], password=request.POST['password'])
 
 @csrf_exempt
 def login(request):
