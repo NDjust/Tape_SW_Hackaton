@@ -27,5 +27,5 @@ class Video(models.Model):
     title = models.CharField(max_length=150)
     description = models.TextField()
     pub_date = models.DateTimeField()
-    thumbnail = models.FilePathField()
-    filepath = models.FilePathField()
+    thumbnail = models.FileField()
+    filepath = models.FileField()
