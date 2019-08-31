@@ -46,5 +46,7 @@ EXPOSE 80 443 8000
 # nginx 설치
 RUN apt install -y nginx
 
-ENTRYPOINT service mysql start && python /server/manage.py migrate && service nginx start && bash
-
+ENTRYPOINT service mysql start \
+  && python /server/manage.py migrate \
+  && service nginx start \
+  && python /server/manage.py runserver

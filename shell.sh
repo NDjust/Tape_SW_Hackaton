@@ -6,6 +6,5 @@ sudo docker run -it --rm \
   -e GOOGLE_APPLICATION_CREDENTIALS=/credential.json \
   -v `pwd`/server/src/server:/server \
   -v `pwd`/server/host.conf:/etc/nginx/sites-enabled/default \
-  -p 80:80 \
-  server
-
+  --entrypoint="/bin/sh" \
+  server -c "service mysql start && bash"
