@@ -42,7 +42,7 @@ class VideoSerializer(serializers.ModelSerializer):
         }
 
 class VideoViewSet(viewsets.ModelViewSet):
-    queryset = Video.objects.all()
+    queryset = Video.objects.order_by('-id')
     serializer_class = VideoSerializer
     parser_classes = (MultiPartParser, FormParser,)
     read_only_fields = ('user',)
