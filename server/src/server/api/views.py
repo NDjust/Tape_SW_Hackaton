@@ -36,11 +36,7 @@ class VideoSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'title', 'filepath', 'filterpath', 'pub_date', 'thumbnail', 'description']
     user = serializers.SerializerMethodField()
     def get_user(self, obj):
-        return {
-            'id': obj.user.id,
-            'name': obj.user.profile.name,
-            'phone': obj.user.username,
-        }
+        return obj.user.profile.name
 
 class VideoViewSet(viewsets.ModelViewSet):
     queryset = Video.objects.order_by('-id')
