@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.contrib import auth
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.core.files.storage import FileSystemStorage
 
 import os
 import shutil
@@ -55,14 +56,14 @@ class VideoViewSet(viewsets.ModelViewSet):
         4. filtering된 영상 db에 가져와 저장.
         5. app 화면에는 filtering된 영상 업로드.
         """
-        # MemoryUploadedFile 과 TemporaryUploadedFile 처리
-        raw_video = self.request.data.get('filepath').temporary_file_path()
+        upload_file = self.request.data.get('filepath')
 
         tape_input = os.path.join(settings.TAPE_ROOT, 'input/')
+        tape_input_video = os.path.join(tape_input, 'test2.mp4')
 
         # copy raw video into tape input directory
-        os.system("cp " + raw_video + " " + tape_input + "test2.mp4")
-        # shutil.copyfile(raw_video, tape_input + 'test2.mp4')
+        with open(tape_input_video, 'wb', 4096) as f:
+            f.write(upload_file.read())
 
         # 상대 경로이기 때문에 cd로 해당 루트로 들어가서 실행.
         # system 첫 호출시 위치는 root.
@@ -71,12 +72,14 @@ class VideoViewSet(viewsets.ModelViewSet):
         # Get reult file & save the file at filtering field
         output_path = os.path.join(settings.TAPE_ROOT, 'output/')
 
-        result_file = "filter_" + os.listdir(output_path)[os.listdir(output_path).index('test2.mp4')]
-        thumnail = "filter_" + os.listdir(output_path)[os.listdir(output_path).index('test2.jpg')]
+        result_file = "filter_" + upload_file.name
+        thumnail = "filter_" + upload_file.name + '.jpg'
 
         # copy media directory
-        os.system("cp " + output_path + "test2.mp4 " + os.path.join(settings.MEDIA_ROOT, result_file))
-        os.system("cp " + output_path + "test2.jpg " + os.path.join(settings.MEDIA_ROOT, thumnail))
+        fs = FileSystemStorage()
+        result_file = fs.save(result_file, open(output_path + "test2.mp4", "rb"))
+        fs = FileSystemStorage()
+        thumnail = fs.save(thumnail, open(output_path + "test2.jpg", 'rb'))
 
         serializer.save(
             user=User.objects.get(pk=self.request.data.get('user')),
