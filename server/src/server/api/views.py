@@ -6,15 +6,25 @@ from .models import *
 from django.contrib.auth.models import User
 from django.contrib import auth
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+
+import os
+import shutil
 # Create your views here.
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
+class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = '__all__'
-
 class ProfileViewSet(viewsets.ModelViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
@@ -22,7 +32,14 @@ class ProfileViewSet(viewsets.ModelViewSet):
 class VideoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Video
-        fields = ['user', 'title', 'filepath', 'pub_date', 'thumbnail', 'description']
+        fields = ['id', 'user', 'title', 'filepath', 'filterpath', 'pub_date', 'thumbnail', 'description']
+    user = serializers.SerializerMethodField()
+    def get_user(self, obj):
+        return {
+            'id': obj.user.id,
+            'name': obj.user.profile.name,
+            'phone': obj.user.username,
+        }
 
 class VideoViewSet(viewsets.ModelViewSet):
     queryset = Video.objects.all()
@@ -38,18 +55,40 @@ class VideoViewSet(viewsets.ModelViewSet):
         4. filtering된 영상 db에 가져와 저장.
         5. app 화면에는 filtering된 영상 업로드.
         """
-        # os tape api main.py
-        video_field = self.request.data.get('filepath')
-        # os로 tape input file 넣기
-        # os main.py 실행
-        # filter_file = os로 result에 생성된 영상 파일 load
-        # queryset.filterpath = filter_file
+        # MemoryUploadedFile 과 TemporaryUploadedFile 처리
+        raw_video = self.request.data.get('filepath').temporary_file_path()
+
+        tape_input = os.path.join(settings.TAPE_ROOT, 'input/')
+
+        # copy raw video into tape input directory
+        os.system("cp " + raw_video + " " + tape_input + "test2.mp4")
+        # shutil.copyfile(raw_video, tape_input + 'test2.mp4')
+
+        # 상대 경로이기 때문에 cd로 해당 루트로 들어가서 실행.
+        # system 첫 호출시 위치는 root.
+        os.system("cd " + settings.TAPE_ROOT + " && python main.py")
+
+        # Get reult file & save the file at filtering field
+        output_path = os.path.join(settings.TAPE_ROOT, 'output/')
+
+        result_file = "filter_" + os.listdir(output_path)[os.listdir(output_path).index('test2.mp4')]
+        thumnail = "filter_" + os.listdir(output_path)[os.listdir(output_path).index('test2.jpg')]
+
+        # copy media directory
+        os.system("cp " + output_path + "test2.mp4 " + os.path.join(settings.MEDIA_ROOT, result_file))
+        os.system("cp " + output_path + "test2.jpg " + os.path.join(settings.MEDIA_ROOT, thumnail))
+
         serializer.save(
             user=User.objects.get(pk=self.request.data.get('user')),
             title=self.request.data.get('title'),
             filepath=self.request.data.get('filepath'),
-            thumbnail=self.request.data.get('thumbnail'),
-            description=self.request.data.get('description'))
+            description=self.request.data.get('description'),
+            filterpath=result_file,
+            thumbnail=thumnail,
+            )
+
+        # user = auth.authenticate(
+        #     request, username=request.POST['phone'], password=request.POST['password'])
 
 @csrf_exempt
 def login(request):

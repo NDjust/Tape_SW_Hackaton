@@ -16,6 +16,7 @@ from api import views
 app_name = 'server'
 
 router = routers.DefaultRouter()
+router.register('users', views.UserViewSet)
 router.register('profiles', views.ProfileViewSet)
 router.register('videos', views.VideoViewSet)
 
